@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<contextName>template</contextName>
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>true</resetJUL>
+	</contextListener>
+	<!-- To enable JMX Management -->
+	<jmxConfigurator/>
+	<appender
+		name="console"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
+			by default -->
+		<encoder>
+			<pattern>%d|%-5level|%-40.40logger{10}|%msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender
+		name="file"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/logs/karaf-invalid-bundle.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/logs/karaf-invalid-bundle.%d{yyyy-MM-dd}.%i
+			</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- or whenever the file size reaches 10MB -->
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>10</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d|%-5level|%-40.40logger{10}|%msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender
+		name="ASYNC"
+		class="ch.qos.logback.classic.AsyncAppender">
+		<appender-ref ref="file"/>
+	</appender>
+	<!-- logger message camel -->
+	<logger
+		name="camel"
+		additivity="false">
+		<level value="info"/>
+		<appender-ref ref="console"/>
+	</logger>
+	<!-- logger request/response httpClient -->
+	<logger
+		name="httpclient.wire"
+		additivity="false">
+		<level value="info"/>
+		<appender-ref ref="console"/>
+	</logger>
+	<logger
+		name="org.apache"
+		level="info"/>
+	<logger
+		name="org.apache.camel"
+		level="info"/>
+	<logger
+		name="org.apache.cxf"
+		level="info"/>
+	<logger
+		name="org.apache.cxf.management"
+		level="info"/>
+	<logger
+		name="org.apache.http.wire"
+		level="info"/>
+	<logger
+		name="fr.mgdis"
+		level="info"/>
+	<logger
+		name="org.springframework"
+		level="info"/>
+	<logger
+		name="org.springframework.beans"
+		level="info"/>
+	<root level="debug">
+		<appender-ref ref="console"/>
+		<appender-ref ref="ASYNC"/>
+	</root>
+</configuration>

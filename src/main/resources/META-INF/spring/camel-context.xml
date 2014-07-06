@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:ctx="http://www.springframework.org/schema/context" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:osgi="http://camel.apache.org/schema/osgi"
+	xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://camel.apache.org/schema/osgi http://camel.apache.org/schema/osgi/camel-osgi.xsd
+       http://www.springframework.org/schema/osgi-compendium http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd">
+	<!-- bridge spring property placeholder with Camel -->
+	<!-- you must NOT use the <context:property-placeholder at the same time, only this bridge bean -->
+<!-- 	<bean id="contextProperties" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer"> -->
+<!-- 	  <property name="location" value="classpath:context.properties"/> -->
+<!-- 	</bean> -->
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:context.properties"/>
+    </bean>
+	<!-- Camel tracer -->
+	<bean id="camelTracer" class="org.apache.camel.processor.interceptor.Tracer">
+		<property name="traceExceptions" value="true"/>
+		<property name="traceInterceptors" value="false"/>
+		<property name="traceOutExchanges" value="true"/>
+		<property name="logStackTrace" value="true"/>
+		<property name="logLevel" value="${camel.trace.level}"/>
+		<property name="logName" value="mgdis.connector"/>
+	</bean>
+	<bean id="traceFormatter"
+		class="org.apache.camel.processor.interceptor.DefaultTraceFormatter">
+		<property name="showShortExchangeId" value="true"/>
+		<property name="showProperties" value="true"/>
+		<property name="showHeaders" value="true"/>
+		<property name="showBody" value="true"/>
+		<property name="showBodyType" value="true"/>
+		<property name="showOutHeaders" value="true"/>
+		<property name="showOutBody" value="true"/>
+		<property name="showOutBodyType" value="false"/>
+		<property name="breadCrumbLength" value="160"/>
+		<property name="nodeLength" value="0"/>
+	</bean>
+	<!-- services beans for WS consumption -->
+	<camel:camelContext id="camel-context"
+		xmlns="http://camel.apache.org/schema/spring"
+		autoStartup="true" trace="true">
+        <camel:propertyPlaceholder id="properties" location="ref:contextProperties"/>
+		<camel:endpoint id="incoming.endpoint" uri="${incoming.endpoint}"/>
+		<camel:endpoint id="outgoing.endpoint" uri="${outgoing.endpoint}"/>
+		<camel:route id="error.sample">
+			<camel:from ref="incoming.endpoint"/>
+			<camel:setHeader headerName="Content-Type">
+				<camel:constant>text/xml; charset=utf-8</camel:constant>
+			</camel:setHeader>
+			<camel:to uri="xslt:xslt/template.xslt" />			
+			<camel:to ref="outgoing.endpoint"/>			
+		</camel:route>
+	</camel:camelContext>
+</beans>

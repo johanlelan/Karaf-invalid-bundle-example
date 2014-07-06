@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:ctx="http://www.springframework.org/schema/context"
+	xmlns:broker="http://activemq.apache.org/schema/core"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.7.0.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<!-- Broker embarqué -->
+	<!-- Si vous activer useJmx, le broker est administrable via jmx (cf. jConsole, 
+		Jvisualvm), par contre des tests concurrents ne peuvent pas être -->
+	<!-- lancés sur la même machine car le port jmx par défaut 1099 sera déjà 
+		"bind". -->
+	<broker
+		id="testBroker"
+		brokerName="testBroker"
+		useJmx="false"
+		persistent="false"
+		start="true"
+		deleteAllMessagesOnStartup="true"
+		xmlns="http://activemq.apache.org/schema/core">
+		<transportConnectors>
+			<!-- Transport VM entre AMQ et Camel -->
+			<transportConnector
+				name="vm"
+				uri="${amq.brokerURL}"/>
+			<!-- Trancport TCP pour usage distant -->
+			<!-- <broker:transportConnector name="tcp" uri="tcp://0.0.0.0:61616"/> -->
+		</transportConnectors>
+	</broker>
+	<!-- jms ConnectionFactory -->
+	<bean
+		id="amqConnectionFactory"
+		class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property
+			name="brokerURL"
+			value="${amq.brokerURL}"/>
+	</bean>
+	<!-- amq camel component -->
+	<bean
+		id="amq"
+		class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property
+			name="connectionFactory"
+			ref="amqConnectionFactory"/>
+	</bean>
+</beans>
